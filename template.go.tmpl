@@ -1,0 +1,63 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+)
+
+{{range .}}
+// {{.Name}}Request represents the request body for the {{.Name}} endpoint.
+type {{.Name}}Request struct {
+	// Define fields based on your API's request model
+}
+
+// {{.Name}}Response represents the response body for the {{.Name}} endpoint.
+type {{.Name}}Response struct {
+	// Define fields based on your API's response model
+}
+
+// {{.Name}} makes a request to the {{.Name}} endpoint.
+func (c *APIClient) {{.Name}}(req {{.Name}}Request) ({{.Name}}Response, error) {
+	// Marshal request body to JSON
+	reqBody, err := json.Marshal(req)
+	if err != nil {
+		return {{.Name}}Response{}, err
+	}
+
+	// Create HTTP request
+	url := c.baseURL + "{{.Path}}"
+	httpReq, err := http.NewRequest("{{.Method}}", url, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return {{.Name}}Response{}, err
+	}
+
+	// Set headers, authentication, etc. if needed
+	// httpReq.Header.Set("Content-Type", "application/json")
+	// Add authentication headers, etc.
+
+	// Send HTTP request
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return {{.Name}}Response{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return {{.Name}}Response{}, err
+	}
+
+	// Unmarshal response body
+	var response {{.Name}}Response
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		return {{.Name}}Response{}, err
+	}
+
+	return response, nil
+}
+{{end}}
