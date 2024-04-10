@@ -1,6 +1,6 @@
 //go:build exclude
 
-package main
+package {{.TargetServiceName}}
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-{{range .}}
+{{range .Endpoints}}
 
 // {{.Name}}Request represents the request body for the {{.Name}} endpoint.
 type {{.Name}}Request struct {
@@ -23,7 +23,7 @@ type {{.Name}}Response struct {
 
 {{end}}
 
-{{range .}}
+{{range .Endpoints}}
 
 // {{.Name}} makes a request to the {{.Name}} endpoint.
 func {{.Name}}(req {{.Name}}Request) ({{.Name}}Response, error) {

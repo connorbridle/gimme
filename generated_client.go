@@ -1,6 +1,6 @@
 //go:build exclude
 
-package main
+package smssendapi
 
 import (
 	"bytes"

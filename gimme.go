@@ -8,6 +8,15 @@ import (
 	"strings"
 )
 
+var (
+	targetServiceName string = ""
+)
+
+type Generator struct {
+	TargetServiceName string
+	Endpoints         []Endpoint
+}
+
 type Endpoint struct {
 	Name   string
 	Path   string
@@ -53,6 +62,11 @@ func parseMDFile(fileName string) ([]Endpoint, error) {
 
 	for i := 0; i < len(fileLines)-1; i++ {
 		line := fileLines[i]
+
+		if strings.HasPrefix(line, "# ") {
+			targetServiceName = strings.TrimLeft(line, "# ")
+		}
+
 		if strings.HasPrefix(line, "### ") {
 			endpoint := Endpoint{}
 			innerIndex := i + 1
@@ -110,13 +124,13 @@ func generateCodeFromTemplate(endpoints []Endpoint) (string, error) {
 		return "", err
 	}
 
-	var generatedCode string
 	buffer := bytes.NewBufferString("")
-	err = tmpl.Execute(buffer, endpoints)
+	err = tmpl.Execute(buffer, Generator{
+		Endpoints:         endpoints,
+		TargetServiceName: targetServiceName,
+	})
 	if err != nil {
 		return "", err
 	}
-	generatedCode = buffer.String()
-
-	return generatedCode, nil
+	return buffer.String(), nil
 }

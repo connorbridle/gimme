@@ -1,4 +1,4 @@
-# API Contract
+# smssendapi
 
 ## Endpoints
 
