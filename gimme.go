@@ -63,8 +63,27 @@ func parseLocalMDFile(fileName string) ([]Endpoint, error) {
 		fileLines = append(fileLines, fileScanner.Text())
 	}
 
-	for i := 0; i < len(fileLines)-1; i++ {
-		line := fileLines[i]
+	endpoints, err = parseEndpointsFromSlice(fileLines)
+	if err != nil {
+		return nil, err
+	}
+	return endpoints, nil
+
+}
+
+func parseMDFileFromString(content string) ([]Endpoint, error) {
+	mdLines := strings.Split(content, "\n")
+	endpoints, err := parseEndpointsFromSlice(mdLines)
+	if err != nil {
+		return nil, err
+	}
+	return endpoints, nil
+}
+
+func parseEndpointsFromSlice(lines []string) ([]Endpoint, error) {
+	var endpoints []Endpoint
+	for i := 0; i < len(lines)-1; i++ {
+		line := lines[i]
 
 		if strings.HasPrefix(line, "# ") {
 			targetServiceName = strings.TrimLeft(line, "# ")
@@ -74,13 +93,14 @@ func parseLocalMDFile(fileName string) ([]Endpoint, error) {
 			endpoint := Endpoint{}
 			innerIndex := i + 1
 			for {
-				// Base condition
 				innerIndex++
-				if innerIndex > len(fileLines)-1 {
+
+				// Base condition
+				if innerIndex > len(lines)-1 {
 					break
 				}
 
-				potentialInnerLine := fileLines[innerIndex]
+				potentialInnerLine := lines[innerIndex]
 
 				// Check if we've hit another endpoint, if so set outer index and break out
 				if strings.HasPrefix(potentialInnerLine, "### ") {
@@ -109,11 +129,6 @@ func parseLocalMDFile(fileName string) ([]Endpoint, error) {
 	}
 
 	return endpoints, nil
-
-}
-
-func parseMDFileFromString() {
-	// TODO: Parse the apimd file when it's retrieved as a string from a service response.
 }
 
 func writeOutputToFile(fileName string, content string) (bool, error) {
