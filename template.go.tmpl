@@ -1,14 +1,16 @@
+//go:build exclude
+
 package main
 
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 )
 
 {{range .}}
+
 // {{.Name}}Request represents the request body for the {{.Name}} endpoint.
 type {{.Name}}Request struct {
 	// Define fields based on your API's request model
@@ -19,8 +21,12 @@ type {{.Name}}Response struct {
 	// Define fields based on your API's response model
 }
 
+{{end}}
+
+{{range .}}
+
 // {{.Name}} makes a request to the {{.Name}} endpoint.
-func (c *APIClient) {{.Name}}(req {{.Name}}Request) ({{.Name}}Response, error) {
+func {{.Name}}(req {{.Name}}Request) ({{.Name}}Response, error) {
 	// Marshal request body to JSON
 	reqBody, err := json.Marshal(req)
 	if err != nil {

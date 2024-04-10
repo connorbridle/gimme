@@ -2,7 +2,8 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"bytes"
+	"html/template"
 	"os"
 	"strings"
 )
@@ -15,7 +16,7 @@ type Endpoint struct {
 
 func main() {
 	targetMDFile := "api.md"
-	// targetOutputFile := "generated_client.go"
+	targetOutputFile := "generated_client.go"
 
 	// Parse the MD file
 	eps, err := parseMDFile(targetMDFile)
@@ -24,10 +25,13 @@ func main() {
 	}
 
 	// Generate the code from the template provided
+	generatedCode, err := generateCodeFromTemplate(eps)
+	if err != nil {
+		return
+	}
 
 	// Output to the target output file
-	fmt.Println(eps)
-
+	writeOutputToFile(targetOutputFile, generatedCode)
 }
 
 func parseMDFile(fileName string) ([]Endpoint, error) {
@@ -100,5 +104,19 @@ func writeOutputToFile(fileName string, content string) (bool, error) {
 }
 
 func generateCodeFromTemplate(endpoints []Endpoint) (string, error) {
-	return "nil", nil
+	templateFile := "template.go.tmpl"
+	tmpl, err := template.ParseFiles(templateFile)
+	if err != nil {
+		return "", err
+	}
+
+	var generatedCode string
+	buffer := bytes.NewBufferString("")
+	err = tmpl.Execute(buffer, endpoints)
+	if err != nil {
+		return "", err
+	}
+	generatedCode = buffer.String()
+
+	return generatedCode, nil
 }
