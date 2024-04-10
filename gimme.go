@@ -3,7 +3,10 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"html/template"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -28,7 +31,7 @@ func main() {
 	targetOutputFile := "generated_client.go"
 
 	// Parse the MD file
-	eps, err := parseMDFile(targetMDFile)
+	eps, err := parseLocalMDFile(targetMDFile)
 	if err != nil {
 		return
 	}
@@ -43,7 +46,7 @@ func main() {
 	writeOutputToFile(targetOutputFile, generatedCode)
 }
 
-func parseMDFile(fileName string) ([]Endpoint, error) {
+func parseLocalMDFile(fileName string) ([]Endpoint, error) {
 	var endpoints []Endpoint
 
 	readFile, err := os.Open(fileName)
@@ -109,6 +112,10 @@ func parseMDFile(fileName string) ([]Endpoint, error) {
 
 }
 
+func parseMDFileFromString() {
+	// TODO: Parse the apimd file when it's retrieved as a string from a service response.
+}
+
 func writeOutputToFile(fileName string, content string) (bool, error) {
 	err := os.WriteFile(fileName, []byte(content), 0644)
 	if err != nil {
@@ -133,4 +140,23 @@ func generateCodeFromTemplate(endpoints []Endpoint) (string, error) {
 		return "", err
 	}
 	return buffer.String(), nil
+}
+
+func fetchApiMDFromService(targetUrl string) (string, error) {
+	resp, err := http.Get(targetUrl)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("Failed to fetch api.md from remote url. StatusCode=%v", resp.StatusCode)
+	}
+
+	content, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(content), nil
 }
